@@ -136,3 +136,51 @@ export const disconnect = () => {
 };
 
 
+export const connectUsingSavedAccount = (savedAccount) => {
+  return async (dispatch) => {
+    // First, just update the account without connecting to MetaMask again.
+    dispatch(updateAccountRequest({ account: savedAccount }));
+
+    // Now, ensure connection to the contract.
+    const abiResponse = await fetch("/config/abi.json", {
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    });
+    const abi = await abiResponse.json();
+    const configResponse = await fetch("/config/config.json", {
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    });
+    const CONFIG = await configResponse.json();
+
+    const { ethereum } = window;
+
+    if (ethereum && ethereum.isMetaMask) {
+      Web3EthContract.setProvider(ethereum);
+      const web3 = new Web3(ethereum);
+      const networkId = await ethereum.request({ method: "net_version" });
+
+      if (networkId == CONFIG.NETWORK.ID) {
+        const SmartContractObj = new Web3EthContract(abi, CONFIG.CONTRACT_ADDRESS);
+        dispatch(
+          connectSuccess({
+            account: savedAccount,
+            smartContract: SmartContractObj,
+            web3: web3,
+          })
+        );
+
+        // Since we're connected now, fetch data
+        dispatch(fetchData());
+      } else {
+        dispatch(connectFailed(`Change network to ${CONFIG.NETWORK.NAME}.`));
+      }
+    }
+  };
+};
+
+
