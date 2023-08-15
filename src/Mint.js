@@ -71,7 +71,7 @@ function Mint() {
         MAX_SUPPLY: 1,
     });
 
-    const endTime = new Date('2023-08-05T18:00:00Z');
+    const endTime = new Date('2023-08-15T08:35:00Z');
 
 
 
