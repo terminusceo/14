@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import * as s from './styles/globalStyles';
 import { useDispatch, useSelector } from 'react-redux';
-import { connect, disconnect, updateAccount } from './redux/blockchain/blockchainActions';
+import { connect, disconnect, updateAccount, connectUsingSavedAccount } from './redux/blockchain/blockchainActions';
 import { NavLink } from 'react-router-dom';
 
 function Header() {
@@ -10,11 +10,12 @@ function Header() {
 
     useEffect(() => {
         const savedAccount = localStorage.getItem('walletAddress');
-
         if (savedAccount && !blockchain.account) {
-            dispatch(updateAccount(savedAccount));
+            dispatch(connectUsingSavedAccount(savedAccount));
         }
-    }, [dispatch]);
+    }, [dispatch, blockchain.account]);
+
+
 
     const handleConnect = async () => {
         await dispatch(connect());
